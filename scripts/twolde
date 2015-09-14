@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-
+"""
+It's like Twitshift, but for people who prefer Twolde
+"""
 import argparse
 import os
 import sys
@@ -16,11 +18,11 @@ CONSUMER_KEY = 'i4VfqFLIY7E08Ros9AhA'
 CONSUMER_SECRET = 'XP0JjlMMPtaC0IOvHv6VXzE31izdiUy1rXcoPeYg'
 
 
-def get_times():
+def get_times(years):
     now = datetime.utcnow()
-    last_year = datetime(now.year - 1, now.month, now.day, now.hour,
+    prev_year = datetime(now.year - years, now.month, now.day, now.hour,
                          now.minute, now.second, now.microsecond, now.tzinfo)
-    return now, last_year
+    return now, prev_year
 
 
 def authenticate_user(message):
@@ -82,7 +84,7 @@ def uninstall():
     os.remove(CONFIG_FILENAME)
 
 
-def run():
+def run(years):
     print '\n\n===Twolde==='
 
     try:
@@ -100,7 +102,7 @@ def run():
 
     scheduler = sched.scheduler(time.time, time.sleep)
 
-    now, last_year = get_times()
+    now, prev_year = get_times(years)
     best = now
 
     max_id = None
@@ -109,7 +111,7 @@ def run():
 
     # iterate back through pages of 200 tweets until
     # the last tweet is more than a year ago
-    while best > last_year:
+    while best > prev_year:
         if max_id:
             user_timeline += new_api.user_timeline(
                 screen_name=username, count=200, include_rts=1,
@@ -123,19 +125,19 @@ def run():
         best = user_timeline[index].created_at
         max_id = user_timeline[index].id
 
-        if best < last_year:
+        if best < prev_year:
             # go forward through the tweets until
             # we find the first one since a year ago
-            while best < last_year:
+            while best < prev_year:
                 index -= 1
                 best = user_timeline[index].created_at
 
             while index >= 0:
                 next_tweet = user_timeline[index]
 
-                now, last_year = get_times()
+                now, prev_year = get_times(years)
                 sleep_seconds = (
-                    next_tweet.created_at - last_year).total_seconds()
+                    next_tweet.created_at - prev_year).total_seconds()
 
                 print 'Next tweet: "{}"'.format(
                     next_tweet.text.encode('utf-8'))
@@ -160,7 +162,7 @@ def run():
             # we've run out of tweets since we started so start again
             user_timeline = tweepy.models.ResultSet()
             max_id = None
-            best, last_year = get_times()
+            best, prev_year = get_times(years)
 
     print "I'm finished!"
 
@@ -212,11 +214,18 @@ def nice_time(seconds):
 
 def main():
     """ main """
-    parser = argparse.ArgumentParser(description='')
+    parser = argparse.ArgumentParser(
+        description="It's like Twitshift, but for people who prefer Twolde",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         dest='command',
         choices=['install', 'run', 'remove'],
         help='the twolde command to run')
+    parser.add_argument(
+        '-y', '--years',
+        type=int,
+        default=1,
+        help='Number of years in the past')
     args = parser.parse_args()
 
     # very basic argument parsing
@@ -225,7 +234,7 @@ def main():
     elif args.command == "rm":
         uninstall()
     elif args.command == "run":
-        run()
+        run(args.years)
 
 
 if __name__ == '__main__':
