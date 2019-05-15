@@ -1,5 +1,6 @@
 language: python
 dist: xenial
+cache: pip
 
 # Supported CPython versions:
 # https://en.wikipedia.org/wiki/CPython#Version_history
