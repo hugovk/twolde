@@ -17,7 +17,7 @@ install:
 
 script:
  # Static analysis
- - flake8 --statistics --count
+ - flake8 . scripts/twolde --statistics --count
 
 matrix:
   fast_finish: true

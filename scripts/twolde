@@ -3,15 +3,22 @@
 from __future__ import print_function
 
 import argparse
-import ConfigParser
 import os
 import sched
 import sys
 import time
 from datetime import datetime
-from HTMLParser import HTMLParser
 
 import tweepy
+
+try:
+    # Python 2
+    import ConfigParser as configparser
+    from HTMLParser import HTMLParser
+except ImportError:
+    # Python 3
+    import configparser
+    import html.parser as HTMLParser
 
 try:
     # Python 2
@@ -51,7 +58,7 @@ def authenticate_user(message):
 
 
 def get_details():
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     config.read(CONFIG_FILENAME)
     return (
         config.get("current", "username"),
@@ -68,7 +75,7 @@ def install():
     olde_username, olde_key, olde_secret = authenticate_user(
         'Press Enter to authenticate the year olde account with Twitter...')
 
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     # write the olde details
     config.add_section("olde")
     config.set("olde", "username", olde_username)
@@ -98,7 +105,7 @@ def run():
     try:
         username, key, secret, olde_username, olde_key, olde_secret = \
             get_details()
-    except ConfigParser.NoSectionError:
+    except configparser.NoSectionError:
         sys.exit('Error: did you remember to python twolde.py install?\n')
 
     new_auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
