@@ -1,4 +1,5 @@
 language: python
+dist: xenial
 
 # Supported CPython versions:
 # https://en.wikipedia.org/wiki/CPython#Version_history
@@ -6,19 +7,16 @@ python:
  - pypy3
  - pypy
  - "2.7"
+ - "3.7"
  - "3.6"
  - "3.5"
- - "3.4"
-
-sudo: false
 
 install:
- - pip install pyflakes pycodestyle
+ - pip install flake8
 
 script:
  # Static analysis
- - pyflakes . scripts/twolde
- - pycodestyle --statistics --count . scripts/twolde
+ - flake8 --statistics --count
 
 matrix:
   fast_finish: true
